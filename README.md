@@ -103,6 +103,8 @@ DMS marca como *not in registry* todo plugin que no tenga un JSON en un registro
 
 La acción `.github/workflows/registry-entry.yml` corre en cada push a `main` o `master`, y también a mano. Lee `plugin.json` y `registry.json`, arma el manifiesto y lo sube como artefacto `dms-registry-entry`. El nombre del archivo es `{usuario}-apple-lock-auth.json`.
 
+En `main`, esa misma acción publica la release `vX.Y.Z` tomada de `plugin.json`. Adjunta el JSON del registro y un zip `appleLockAuth-X.Y.Z.zip`. Si esa versión ya tiene tag en otro commit, no publica nada: sube `version` en `plugin.json` y vuelve a empujar `main`.
+
 Para generarlo en local, con la URL pública del repositorio:
 
 ```bash

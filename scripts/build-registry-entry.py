@@ -129,6 +129,9 @@ def build_entry(plugin: dict, registry: dict, url: str) -> dict:
     requires = plugin.get("requires_dms")
     if isinstance(requires, str) and requires.strip():
         entry["requires_dms"] = requires
+    if (ROOT / "screenshot.jpg").is_file():
+        branch = os.environ.get("GITHUB_REF_NAME", "main").strip() or "main"
+        entry["screenshot"] = f"{url}/raw/{branch}/screenshot.jpg"
     return entry
 
 

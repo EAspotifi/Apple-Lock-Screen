@@ -1,4 +1,4 @@
-name: Registry entry
+name: Registry and release
 
 on:
   push:
@@ -20,6 +20,7 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
           GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
         run: python3 scripts/build-registry-entry.py --out dist
 
       - name: Upload registry entry
@@ -28,3 +29,111 @@ jobs:
           name: dms-registry-entry
           path: dist/*.json
           if-no-files-found: error
+
+  release:
+    name: Publish GitHub release
+    needs: registry-entry
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read plugin version
+        id: version
+        run: |
+          VERSION="$(python3 -c 'import json; print(json.load(open("plugin.json", encoding="utf-8"))["version"])')"
+          echo "version=v${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "plain=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Package release files
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          PLAIN: ${{ steps.version.outputs.plain }}
+        run: |
+          python3 scripts/build-registry-entry.py --out dist
+          python3 - <<'PY'
+          import json
+          import os
+          import zipfile
+          from pathlib import Path
+
+          version = os.environ["PLAIN"]
+          plugin = json.loads(Path("plugin.json").read_text(encoding="utf-8"))
+          notes = "\n".join([
+              f"## {plugin['name']} {version}",
+              "",
+              plugin["description"],
+              "",
+              "- El JSON es la entrada para copiar en `plugins/` de [dux-plugin-registry](https://github.com/duxlabs-dev/dux-plugin-registry).",
+              "- El zip se descomprime y la carpeta `appleLockAuth` se copia a `~/.config/dms/plugins/`.",
+              "",
+          ])
+          Path("release-notes.md").write_text(notes, encoding="utf-8")
+
+          archive = Path("dist") / f"appleLockAuth-{version}.zip"
+          with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED) as bundle:
+              for rel in ("plugin.json", "AppleLockAuth.qml", "README.md", "screenshot.jpg"):
+                  bundle.write(rel, f"appleLockAuth/{rel}")
+              for path in Path("ui").rglob("*"):
+                  if path.is_file():
+                      bundle.write(path, f"appleLockAuth/{path.as_posix()}")
+          print(archive)
+          PY
+
+      - name: Create tag when this version is new
+        id: release_tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          TARGET_SHA="$(git rev-parse HEAD)"
+
+          if git show-ref --verify --quiet "refs/tags/${VERSION}"; then
+            EXISTING_SHA="$(git rev-parse "refs/tags/${VERSION}^{commit}")"
+            if [ "$EXISTING_SHA" != "$TARGET_SHA" ]; then
+              echo "Tag $VERSION already belongs to another commit. Bump plugin.json before releasing."
+              echo "should_release=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          else
+            gh api \
+              --method POST \
+              "repos/${GITHUB_REPOSITORY}/git/refs" \
+              -f "ref=refs/tags/${VERSION}" \
+              -f "sha=${TARGET_SHA}" >/dev/null
+          fi
+
+          echo "should_release=true" >> "$GITHUB_OUTPUT"
+
+      - name: Publish release
+        if: steps.release_tag.outputs.should_release == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          TARGET_SHA="$(git rev-parse HEAD)"
+
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            gh release edit "$VERSION" \
+              --target "$TARGET_SHA" \
+              --title "Apple Lock Auth ${VERSION#v}" \
+              --notes-file release-notes.md \
+              --verify-tag
+            gh release upload "$VERSION" dist/*.json dist/*.zip --clobber
+          else
+            gh release create "$VERSION" \
+              --target "$TARGET_SHA" \
+              --title "Apple Lock Auth ${VERSION#v}" \
+              --latest \
+              --verify-tag \
+              --notes-file release-notes.md \
+              dist/*.json \
+              dist/*.zip
+          fi
