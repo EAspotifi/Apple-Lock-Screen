@@ -1,0 +1,30 @@
+name: Registry entry
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  registry-entry:
+    name: Build DMS registry entry
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate plugins entry
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+          GITHUB_SERVER_URL: ${{ github.server_url }}
+        run: python3 scripts/build-registry-entry.py --out dist
+
+      - name: Upload registry entry
+        uses: actions/upload-artifact@v4
+        with:
+          name: dms-registry-entry
+          path: dist/*.json
+          if-no-files-found: error
