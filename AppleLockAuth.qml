@@ -554,7 +554,7 @@ DesktopPluginComponent {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: nameText.bottom
         anchors.topMargin: Math.round(Theme.spacingL * root.generalScale)
-        text: "Haz clic o escribe para desbloquear"
+        text: I18n.trFor("appleLockAuth", "Click or type to unlock")
         color: Theme.withAlpha(root.contentColor, 0.62)
         font.pixelSize: Math.round(Theme.fontSizeSmall * root.generalScale)
         wrapMode: Text.NoWrap
