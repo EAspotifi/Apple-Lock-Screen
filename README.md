@@ -2,6 +2,8 @@
 
 Complemento de la pantalla de bloqueo de DMS (DankMaterialShell / Dux Shell) para Hyprland. Muestra el avatar, lo eleva al interactuar y abre la barra de contraseña. No es un plugin de `hyprpm`: vive en la lista de complementos de DMS.
 
+![Pantalla de bloqueo con el avatar y la barra de contraseña](screenshot.jpg)
+
 Versión actual: `1.2.1`. Requiere DMS `>= 1.2.0`.
 
 ## Estructura
