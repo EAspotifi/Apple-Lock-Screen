@@ -85,8 +85,8 @@ DesktopPluginComponent {
 
     readonly property color contentColor: Theme.lockScreenContentColor
     readonly property color accentColor: Theme.primary
-    readonly property color applePillColor: inputScope.activeFocus ? "#73000000" : "#59000000"
-    readonly property color applePillBorder: inputScope.activeFocus ? "#99FFFFFF" : "#40FFFFFF"
+    readonly property color applePillColor: Theme.withAlpha(Theme.scrimColor, inputScope.activeFocus ? 0.45 : 0.35)
+    readonly property color applePillBorder: Theme.withAlpha(Theme.lockScreenContentColor, inputScope.activeFocus ? 0.6 : 0.25)
 
     function encodeFileUrl(path) {
         if (!path)
@@ -513,59 +513,52 @@ DesktopPluginComponent {
             imageSource: root.resolvedProfileImage
             fallbackIcon: "material:person"
             ringWidth: root.isRing ? 0 : Math.max(1, Math.round(1.5 * root.generalScale))
-            ringColor: root.isApple ? "#59FFFFFF" : Theme.avatarRingColor
+            ringColor: root.isApple ? Theme.withAlpha(Theme.lockScreenContentColor, 0.35) : Theme.avatarRingColor
         }
     }
 
     // --- User Name ------------------------------------------------------
-    Text {
+    StyledText {
         id: nameShadow
 
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: avatarWrap.bottom
-        anchors.topMargin: Math.round(11 * root.generalScale)
+        anchors.topMargin: Math.round(Theme.spacingM * root.generalScale) + 1
         text: nameText.text
-        color: "#59000000"
-        font.family: Theme.fontFamily
-        font.pixelSize: Math.round(15 * root.generalScale)
+        color: Theme.withAlpha(Theme.scrimColor, 0.35)
+        font.pixelSize: Math.round(Theme.fontSizeLarge * root.generalScale)
         font.weight: 600
+        wrapMode: Text.NoWrap
         visible: nameText.visible
     }
 
-    Text {
+    StyledText {
         id: nameText
 
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: avatarWrap.bottom
-        anchors.topMargin: Math.round(10 * root.generalScale)
+        anchors.topMargin: Math.round(Theme.spacingM * root.generalScale)
         text: UserInfoService.fullName || UserInfoService.username || ""
         color: root.contentColor
-        font.family: Theme.fontFamily
-        font.pixelSize: Math.round(15 * root.generalScale)
+        font.pixelSize: Math.round(Theme.fontSizeLarge * root.generalScale)
         font.weight: 600
         font.letterSpacing: 0.2
+        wrapMode: Text.NoWrap
         visible: text.length > 0
     }
 
     // --- Idle hint ------------------------------------------------------
-    Text {
+    StyledText {
         id: hintText
 
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: nameText.bottom
-        anchors.topMargin: Math.round(16 * root.generalScale)
+        anchors.topMargin: Math.round(Theme.spacingL * root.generalScale)
         text: "Haz clic o escribe para desbloquear"
         color: Theme.withAlpha(root.contentColor, 0.62)
-        font.family: Theme.fontFamily
-        font.pixelSize: Math.max(11, Math.round(13 * root.generalScale))
+        font.pixelSize: Math.round(Theme.fontSizeSmall * root.generalScale)
+        wrapMode: Text.NoWrap
         opacity: root.revealed ? 0 : 1
-
-        Behavior on opacity {
-            NumberAnimation {
-                duration: 220
-                easing.type: Easing.OutCubic
-            }
-        }
     }
 
     // --- Password Bar (Apple & Native DMS Styles) -----------------------
@@ -574,7 +567,7 @@ DesktopPluginComponent {
 
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: nameText.bottom
-        anchors.topMargin: Math.round(13 * root.generalScale)
+        anchors.topMargin: Math.round(Theme.spacingM * root.generalScale)
         width: root.fieldWidth
         height: root.isRing ? 0 : root.fieldHeight
         visible: !root.isRing
@@ -582,7 +575,7 @@ DesktopPluginComponent {
 
         radius: {
             if (root.isApple || root.isPill)
-                return height / 2;
+                return Theme.cornerRadiusFull;
             if (root.isExpressive)
                 return Math.round(Theme.cornerRadiusXL * root.generalScale);
             return 0;
@@ -667,10 +660,10 @@ DesktopPluginComponent {
         Item {
             id: nativeLeftIcon
             anchors.left: parent.left
-            anchors.leftMargin: root.isExpressive ? Math.round(8 * root.generalScale) : Math.round(14 * root.generalScale)
+            anchors.leftMargin: root.isExpressive ? Math.round(Theme.spacingS * root.generalScale) : Math.round(Theme.spacingM * root.generalScale)
             anchors.verticalCenter: parent.verticalCenter
             visible: root.isExpressive || root.isPill
-            width: !visible ? 0 : (root.isExpressive ? Math.max(24, root.fieldHeight - Math.round(14 * root.generalScale)) : Math.round(Theme.iconSizeSmall * root.generalScale))
+            width: !visible ? 0 : (root.isExpressive ? Math.max(Theme.iconSize, root.fieldHeight - Math.round(Theme.spacingM * root.generalScale)) : Math.round(Theme.iconSizeSmall * root.generalScale))
             height: width
 
             DMaterialShape {
@@ -746,20 +739,20 @@ DesktopPluginComponent {
         // Content area bounds
         readonly property real contentLeftMargin: {
             if (root.isMinimal)
-                return 4;
+                return Theme.spacingXS;
             if (root.isExpressive || root.isPill)
-                return nativeLeftIcon.x + nativeLeftIcon.width + Math.round(10 * root.generalScale);
-            return Math.round(18 * root.generalScale);
+                return nativeLeftIcon.x + nativeLeftIcon.width + Math.round(Theme.spacingS * root.generalScale);
+            return Math.round(Theme.spacingL * root.generalScale);
         }
 
         readonly property real contentRightMargin: {
-            let right = Math.round(14 * root.generalScale);
+            let right = Math.round(Theme.spacingM * root.generalScale);
             if (spinner.visible)
-                right += spinner.width + 8;
+                right += spinner.width + Theme.spacingS;
             if (nativeEnterButton.visible)
-                right += nativeEnterButton.width + 4;
+                right += nativeEnterButton.width + Theme.spacingXS;
             if (nativeRevealButton.visible)
-                right += nativeRevealButton.width + 4;
+                right += nativeRevealButton.width + Theme.spacingXS;
             return right;
         }
 
@@ -778,7 +771,7 @@ DesktopPluginComponent {
             Row {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.horizontalCenter: parent.horizontalCenter
-                spacing: Math.round(8 * root.generalScale)
+                spacing: Math.round(Theme.spacingS * root.generalScale)
 
                 Repeater {
                     model: root.demoMode ? 6 : Math.max(1, root.buffer.length)
@@ -789,7 +782,7 @@ DesktopPluginComponent {
                         readonly property color tone: root.failed ? Theme.error : root.accentColor
 
                         anchors.verticalCenter: parent.verticalCenter
-                        width: Math.max(10, Math.round(14 * root.generalScale))
+                        width: Math.max(Theme.spacingS, Math.round(Theme.iconSizeSmall * root.generalScale))
                         height: width
                         radius: width / 2
                         color: filled ? tone : "transparent"
@@ -806,7 +799,7 @@ DesktopPluginComponent {
         }
 
         // Placeholder text
-        Text {
+        StyledText {
             id: placeholder
 
             anchors.left: parent.left
@@ -822,14 +815,14 @@ DesktopPluginComponent {
                     return Theme.outline;
                 return Theme.withAlpha(root.contentColor, 0.62);
             }
-            font.family: Theme.fontFamily
-            font.pixelSize: Math.max(11, Math.round(14 * root.generalScale))
+            font.pixelSize: Math.round(Theme.fontSizeMedium * root.generalScale)
+            wrapMode: Text.NoWrap
             visible: !root.isDots && ((root.buffer.length === 0 && !root.demoMode) || root.authenticating || root.unlocking)
             elide: Text.ElideRight
         }
 
         // Password characters / dots text
-        Text {
+        StyledText {
             id: dotsText
 
             anchors.left: parent.left
@@ -843,16 +836,16 @@ DesktopPluginComponent {
                 return (root.isApple ? "\u25CF" : "•").repeat(sample.length);
             }
             color: root.isNativeContained ? Theme.surfaceText : root.contentColor
-            font.family: Theme.fontFamily
             font.pixelSize: {
                 if (root.showPasswordText)
-                    return Math.max(11, Math.round(14 * root.generalScale));
+                    return Math.round(Theme.fontSizeMedium * root.generalScale);
                 if (root.isApple)
-                    return Math.max(7, Math.round(9 * root.generalScale));
-                return Math.max(13, Math.round(18 * root.generalScale));
+                    return Math.round(Theme.fontSizeSmall * 0.75 * root.generalScale);
+                return Math.round(Theme.fontSizeLarge * root.generalScale);
             }
-            font.letterSpacing: root.isApple && !root.showPasswordText ? Math.round(4 * root.generalScale) : 1
+            font.letterSpacing: root.isApple && !root.showPasswordText ? Math.round(Theme.spacingXS * root.generalScale) : 1
             elide: Text.ElideLeft
+            wrapMode: Text.NoWrap
             visible: (!root.isDots || root.showPasswordText) && (root.buffer.length > 0 || (root.demoMode && !root.isApple)) && !root.authenticating && !root.unlocking
         }
 
@@ -863,7 +856,7 @@ DesktopPluginComponent {
             x: dotsText.x + (dotsText.visible ? Math.min(dotsText.contentWidth, dotsText.width) + 3 : 0)
             anchors.verticalCenter: parent.verticalCenter
             width: Math.max(1.5, Math.round(1.5 * root.generalScale))
-            height: Math.round(19 * root.generalScale)
+            height: Math.round(Theme.fontSizeLarge * root.generalScale)
             radius: width / 2
             color: root.isApple ? root.contentColor : root.accentColor
             visible: !root.isDots && inputScope.activeFocus && !root.authenticating && !root.unlocking && !root.demoMode
@@ -881,7 +874,7 @@ DesktopPluginComponent {
         LockActionButton {
             id: nativeRevealButton
             anchors.right: nativeEnterButton.visible ? nativeEnterButton.left : (spinner.visible ? spinner.left : parent.right)
-            anchors.rightMargin: 2
+            anchors.rightMargin: Theme.spacingXXS
             anchors.verticalCenter: parent.verticalCenter
             iconName: root.showPasswordText ? "visibility_off" : "visibility"
             buttonSize: Math.max(24, Math.round(Theme.buttonHeightXS * root.generalScale))
@@ -897,7 +890,7 @@ DesktopPluginComponent {
         LockActionButton {
             id: nativeEnterButton
             anchors.right: parent.right
-            anchors.rightMargin: Math.round(4 * root.generalScale)
+            anchors.rightMargin: Math.round(Theme.spacingXS * root.generalScale)
             anchors.verticalCenter: parent.verticalCenter
             iconName: "keyboard_return"
             buttonSize: Math.max(24, Math.round(Theme.buttonHeightXS * root.generalScale))
@@ -911,9 +904,9 @@ DesktopPluginComponent {
             id: spinner
 
             anchors.right: nativeEnterButton.visible ? nativeEnterButton.left : parent.right
-            anchors.rightMargin: Math.round(14 * root.generalScale)
+            anchors.rightMargin: Math.round(Theme.spacingM * root.generalScale)
             anchors.verticalCenter: parent.verticalCenter
-            size: Math.round(18 * root.generalScale)
+            size: Math.round(Theme.iconSizeMedium * root.generalScale)
             contained: false
             color: root.isApple ? root.contentColor : root.accentColor
             visible: !root.isExpressive && (root.authenticating || root.unlocking)
@@ -927,13 +920,13 @@ DesktopPluginComponent {
 
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: root.isRing ? nameText.bottom : passwordBar.bottom
-        anchors.topMargin: Math.round(9 * root.generalScale)
-        width: Math.min(root.width - 24, feedbackLabel.implicitWidth + 24)
-        height: Math.round(27 * root.generalScale)
-        radius: height / 2
-        color: "#66000000"
+        anchors.topMargin: Math.round(Theme.spacingS * root.generalScale)
+        width: Math.min(root.width - Theme.spacingXL, feedbackLabel.implicitWidth + Theme.spacingXL)
+        height: Math.round((Theme.fontSizeLarge + Theme.spacingM) * root.generalScale)
+        radius: Theme.cornerRadiusFull
+        color: Theme.withAlpha(Theme.scrimColor, 0.4)
         border.width: 1
-        border.color: "#2EFFFFFF"
+        border.color: Theme.withAlpha(Theme.lockScreenContentColor, 0.18)
         visible: root.pillVisible && feedbackLabel.text.length > 0
         opacity: visible ? 1 : 0
         transform: Translate {
@@ -944,16 +937,16 @@ DesktopPluginComponent {
             NumberAnimation { duration: 180 }
         }
 
-        Text {
+        StyledText {
             id: feedbackLabel
 
             anchors.centerIn: parent
-            width: Math.min(implicitWidth, feedbackBox.width - 20)
+            width: Math.min(implicitWidth, feedbackBox.width - Theme.spacingL)
             text: root.feedbackText()
-            color: root.pamState === "fail" || root.pamState === "max" || root.pamState === "error" ? "#FFB4AB" : root.contentColor
-            font.family: Theme.fontFamily
-            font.pixelSize: Math.max(10, Math.round(12 * root.generalScale))
+            color: root.pamState === "fail" || root.pamState === "max" || root.pamState === "error" ? Theme.error : root.contentColor
+            font.pixelSize: Math.round(Theme.fontSizeSmall * root.generalScale)
             elide: Text.ElideRight
+            wrapMode: Text.NoWrap
             horizontalAlignment: Text.AlignHCenter
         }
     }
@@ -962,27 +955,23 @@ DesktopPluginComponent {
         id: capsLockRow
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: feedbackBox.visible ? feedbackBox.bottom : (root.isRing ? nameText.bottom : passwordBar.bottom)
-        anchors.topMargin: Math.round(6 * root.generalScale)
-        spacing: 4
+        anchors.topMargin: Math.round(Theme.spacingXS * root.generalScale)
+        spacing: Theme.spacingXS
         opacity: DMSService.capsLockState && root.pillVisible ? 1 : 0
 
         DIcon {
             name: "shift_lock"
-            size: Math.round(14 * root.generalScale)
+            size: Math.round(Theme.iconSizeSmall * root.generalScale)
             color: Theme.error
             anchors.verticalCenter: parent.verticalCenter
         }
 
-        Text {
+        StyledText {
             text: I18n.tr("Caps Lock is on")
-            font.family: Theme.fontFamily
-            font.pixelSize: Math.max(10, Math.round(12 * root.generalScale))
+            font.pixelSize: Math.round(Theme.fontSizeSmall * root.generalScale)
             color: Theme.error
+            wrapMode: Text.NoWrap
             anchors.verticalCenter: parent.verticalCenter
-        }
-
-        Behavior on opacity {
-            NumberAnimation { duration: 180 }
         }
     }
 

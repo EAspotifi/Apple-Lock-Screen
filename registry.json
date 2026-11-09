@@ -1,6 +1,6 @@
 {
   "category": "appearance",
   "dependencies": [],
-  "compositors": ["hyprland"],
+  "compositors": ["any"],
   "distro": ["any"]
 }
