@@ -46,14 +46,14 @@ DesktopPluginComponent {
     readonly property real avatarSize: Math.round(baseAvatarSize * generalScale)
     readonly property real fieldHeight: Math.round(baseBarHeight * generalScale)
     readonly property real targetFieldWidth: Math.round(baseBarWidth * generalScale)
-    readonly property real fieldWidth: Math.min(Math.max(140, width - 32), targetFieldWidth)
+    readonly property real fieldWidth: Math.min(Math.max(Theme.buttonHeightM * 2 + Theme.spacingXL, width - (Theme.spacingXL + Theme.spacingS)), targetFieldWidth)
     readonly property real liftOffset: Math.round((isRing ? 18 : (fieldHeight * 0.85 + 8)))
     readonly property real ringStroke: Math.max(4, Math.round(6 * generalScale))
     readonly property real ringPadding: Math.max(8, Math.round(12 * generalScale))
     readonly property real ringOuterSize: avatarSize + ringPadding * 2 + ringStroke * 2
 
-    property real defaultWidth: Math.max(360, targetFieldWidth + 64)
-    property real defaultHeight: Math.max(260, avatarSize + fieldHeight + 130)
+    property real defaultWidth: Math.max(Theme.buttonHeightM * 6 + Theme.spacingXL, targetFieldWidth + Theme.iconSizeLarge * 2)
+    property real defaultHeight: Math.max(Theme.buttonHeightM * 4 + Theme.spacingXL + Theme.spacingM, avatarSize + fieldHeight + Theme.buttonHeightM * 2 + Theme.spacingL)
     property real bottomOverflow: (feedbackBox.visible ? feedbackBox.height + 8 : 0) + (capsLockRow.opacity > 0 ? capsLockRow.height + 6 : 0)
 
     minWidth: 220
@@ -542,7 +542,7 @@ DesktopPluginComponent {
         color: root.contentColor
         font.pixelSize: Math.round(Theme.fontSizeLarge * root.generalScale)
         font.weight: 600
-        font.letterSpacing: 0.2
+        font.letterSpacing: Theme.outlineWidth * 0.2
         wrapMode: Text.NoWrap
         visible: text.length > 0
     }
@@ -593,7 +593,7 @@ DesktopPluginComponent {
 
         border.width: {
             if (root.isApple)
-                return 1;
+                return Theme.outlineWidth;
             if (root.isNativeContained)
                 return inputScope.activeFocus ? Math.max(Theme.outlineWidth, Theme.focusRingWidth) : Theme.layerOutlineWidth;
             return 0;
@@ -786,7 +786,7 @@ DesktopPluginComponent {
                         height: width
                         radius: width / 2
                         color: filled ? tone : "transparent"
-                        border.width: 2
+                        border.width: Theme.outlineWidthFocused
                         border.color: filled ? tone : Theme.withAlpha(root.contentColor, Theme.pendingOpacity)
                         scale: filled ? 1 : 0.8
 
@@ -853,7 +853,7 @@ DesktopPluginComponent {
         Rectangle {
             id: cursor
 
-            x: dotsText.x + (dotsText.visible ? Math.min(dotsText.contentWidth, dotsText.width) + 3 : 0)
+            x: dotsText.x + (dotsText.visible ? Math.min(dotsText.contentWidth, dotsText.width) + Theme.outlineWidth + Theme.spacingXXS : 0)
             anchors.verticalCenter: parent.verticalCenter
             width: Math.max(1.5, Math.round(1.5 * root.generalScale))
             height: Math.round(Theme.fontSizeLarge * root.generalScale)
@@ -877,7 +877,7 @@ DesktopPluginComponent {
             anchors.rightMargin: Theme.spacingXXS
             anchors.verticalCenter: parent.verticalCenter
             iconName: root.showPasswordText ? "visibility_off" : "visibility"
-            buttonSize: Math.max(24, Math.round(Theme.buttonHeightXS * root.generalScale))
+            buttonSize: Math.max(Theme.iconSize, Math.round(Theme.buttonHeightXS * root.generalScale))
             visible: !root.isApple && !root.isMinimal && root.showActionButtons && !root.demoMode && root.buffer.length > 0 && !root.authenticating && !root.unlocking
             enabled: visible
             onClicked: {
@@ -893,7 +893,7 @@ DesktopPluginComponent {
             anchors.rightMargin: Math.round(Theme.spacingXS * root.generalScale)
             anchors.verticalCenter: parent.verticalCenter
             iconName: "keyboard_return"
-            buttonSize: Math.max(24, Math.round(Theme.buttonHeightXS * root.generalScale))
+            buttonSize: Math.max(Theme.iconSize, Math.round(Theme.buttonHeightXS * root.generalScale))
             visible: !root.isApple && !root.isMinimal && root.showActionButtons && !root.authenticating && !root.unlocking
             enabled: !root.demoMode && root.pillVisible
             onClicked: root.submit()
@@ -925,7 +925,7 @@ DesktopPluginComponent {
         height: Math.round((Theme.fontSizeLarge + Theme.spacingM) * root.generalScale)
         radius: Theme.cornerRadiusFull
         color: Theme.withAlpha(Theme.scrimColor, 0.4)
-        border.width: 1
+        border.width: Theme.outlineWidth
         border.color: Theme.withAlpha(Theme.lockScreenContentColor, 0.18)
         visible: root.pillVisible && feedbackLabel.text.length > 0
         opacity: visible ? 1 : 0

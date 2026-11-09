@@ -2,7 +2,7 @@
   "id": "appleLockAuth",
   "name": "Apple Lock Auth",
   "description": "Estilo de desbloqueo tipo macOS con soporte para estilos nativos, tamaño configurable de avatar, barra y escala general",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "author": "Ernest",
   "type": "composite",
   "capabilities": [

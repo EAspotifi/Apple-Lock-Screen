@@ -4,7 +4,7 @@ Complemento de la pantalla de bloqueo de DMS (DankMaterialShell / Dux Shell) par
 
 ![Pantalla de bloqueo con el avatar y la barra de contraseña](screenshot.jpg)
 
-Versión actual: `1.2.2`. Requiere DMS `>= 2.0.0`.
+Versión actual: `1.2.3`. Requiere DMS `>= 2.0.0`.
 
 ## Estructura
 
